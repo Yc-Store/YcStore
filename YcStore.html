@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yc Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Genel yazı tipi ve arka plan rengi */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Açık ve temiz bir arka plan */
+            color: #1a202c; /* Koyu gri varsayılan metin rengi */
+            overflow-x: hidden; /* Yatay kaydırmayı engelle */
+        }
+
+        /* Başlık bölümü için tek renk arka plan ve vurgu */
+        .header-bg {
+            background-color: #1f2937; /* Koyu gri tek renk */
+            position: relative;
+            overflow: hidden;
+            border-bottom: 6px solid #3b82f6; /* Alt kısımda mavi vurgu çizgisi */
+        }
+        /* Başlık arka planında hafif desen efekti (isteğe bağlı, kaldırıldı ancak istenirse tekrar eklenebilir) */
+        /* Eğer bu efekti istiyorsanız, yukarıdaki .header-bg-gradient::before CSS bloğunu ve @keyframes'i geri ekleyin */
+
+        /* Uygulama kartları stilizasyonu */
+        .app-card {
+            border-radius: 1.25rem; /* rounded-xl */
+            background-color: white;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); /* Yumuşak gölge */
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Yumuşak animasyon */
+            overflow: hidden;
+            position: relative;
+            border: 1px solid #e5e7eb; /* Hafif bir çerçeve */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 1.75rem; /* Daha kompakt iç boşluk */
+            aspect-ratio: 1 / 1; /* Kareye yakın olmasını sağlar */
+            justify-content: space-between; /* İçeriği eşit dağıt */
+        }
+        /* Uygulama kartı üzerine gelindiğinde efektler */
+        .app-card:hover {
+            transform: translateY(-6px) scale(1.02); /* Hafif kaldırma ve büyüme */
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12); /* Daha belirgin gölge */
+            z-index: 10;
+            border-color: #4299e1; /* Hover anında mavi kenarlık */
+        }
+        /* Uygulama logosu stili */
+        .app-card img {
+            border: 3px solid transparent; /* Varsayılan şeffaf kenarlık */
+            transition: border-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+            object-fit: cover;
+            width: 7rem; /* Logo boyutu */
+            height: 7rem; /* Logo boyutu */
+            border-radius: 1.25rem; /* Logonun kenarlarını da yuvarla */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            flex-shrink: 0; /* Küçülmesini engelle */
+            margin-bottom: 1rem; /* Logo alt boşluğu */
+        }
+        .app-card:hover img {
+            border-color: #6366f1; /* Hover anında mor kenarlık */
+            transform: scale(1.05); /* Logo hafifçe büyür */
+        }
+        /* Uygulama kartı başlık ve açıklama metinleri */
+        .app-card h3 {
+            font-size: 1.5rem; /* text-2xl'den küçük */
+            font-weight: 700; /* font-bold */
+            line-height: 1.25;
+            color: #1a202c;
+            margin-bottom: 0.75rem; /* Başlık alt boşluğu */
+        }
+        .app-card p {
+            font-size: 0.95rem; /* text-sm'den biraz büyük */
+            line-height: 1.5;
+            color: #4a5568;
+            flex-grow: 1; /* Açıklamanın yer kaplamasını sağla */
+        }
+
+        /* Detay modalının arka planı */
+        .detail-modal-overlay {
+            background-color: rgba(0, 0, 0, 0.8); /* Daha koyu şeffaf siyah overlay */
+            backdrop-filter: blur(8px); /* Hafif bulanıklaştırma efekti */
+            -webkit-backdrop-filter: blur(8px); /* Safari desteği */
+            z-index: 999;
+        }
+        /* Modalın içeriği için stil */
+        .detail-modal-content {
+            border-radius: 1.5rem; /* rounded-3xl */
+            background-color: white;
+            max-height: 90vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            animation: fadeInScale 0.35s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3); /* Derin gölge */
+            padding: 3rem; /* Yeterli iç boşluk */
+            position: relative;
+        }
+
+        /* Modala açılış animasyonu */
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.92);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Kapatma butonu stili */
+        #close-modal {
+            background: #e2e8f0;
+            border-radius: 50%;
+            padding: 0.6rem; /* Daha küçük padding */
+            line-height: 1;
+            font-size: 2rem; /* Daha küçük boyut */
+            color: #64748b;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+        }
+        #close-modal:hover {
+            background-color: #ef4444;
+            color: white;
+            transform: rotate(90deg) scale(1.08);
+            box-shadow: 0 5px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Başlık metinleri animasyonları */
+        .animate-fade-in-down {
+            animation: fadeInDown 0.8s ease-out forwards;
+            animation-delay: 0.2s;
+            opacity: 0;
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+            animation-delay: 0.4s;
+            opacity: 0;
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-25px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(25px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Footer bağlantıları için özel stil */
+        .footer-link {
+            position: relative;
+            display: inline-block;
+            overflow: hidden;
+            font-weight: 500;
+            color: #a0aec0;
+        }
+        .footer-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #60a5fa;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .footer-link:hover::after {
+            transform: translateX(0%);
+        }
+
+        /* Arama çubuğu placeholder rengi */
+        .search-input-placeholder::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Modal içindeki indirme butonu özel stil: KAREYE YAKIN VE OVARLOK */
+        .detail-download-button {
+            border-radius: 9999px; /* Tamamen yuvarlatılmış (ovarlok) */
+            padding: 1.25rem 2.5rem; /* Orantılı padding, kareye yakın yapar */
+            font-size: 1.6rem; /* text-xl'den biraz büyük, belirgin ama aşırı değil */
+            line-height: 1; /* Metnin dikeyde ortalanması için */
+            display: inline-flex; /* İçeriğin dikeyde ortalanması için */
+            align-items: center;
+            justify-content: center;
+            max-width: 18rem; /* Butonun uzun olmamasını sağlar (kısa ve eşit kenarlara yakın) */
+            margin: 0 auto; /* Ortalamak için */
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            font-weight: 700; /* font-bold */
+        }
+        .detail-download-button:hover {
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+            transform: scale(1.03); /* Hafif büyüme efekti */
+        }
+        
+        /* Uygulama ekran görüntüleri için yatay stil */
+        .detail-app-images img {
+            height: 14rem; /* h-56 -> 14rem, daha yatay bir görünüm için */
+            object-fit: cover;
+            width: 100%; /* Kendi sütununda tam genişlik */
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            cursor: zoom-in; /* Büyütülebilir olduğunu belirtmek için imleç */
+            transition: transform 0.2s ease-in-out;
+        }
+
+        /* Yeni eklenen resim modalı stilleri */
+        .image-modal-overlay {
+            background-color: rgba(0, 0, 0, 0.9); /* Resim modalı için daha koyu arka plan */
+            backdrop-filter: blur(12px); /* Daha belirgin bulanıklaştırma */
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 1000; /* En üstte olmalı */
+        }
+
+        .image-modal-content {
+            position: relative;
+            max-width: 90%; /* Ekranın %90'ını kaplar */
+            max-height: 90%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        .image-modal-content img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* Resmin tamamının görünmesini sağlar */
+            border-radius: 0.75rem;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .image-modal-close {
+            position: absolute;
+            top: -20px; /* Resmin biraz üzerine */
+            right: -20px; /* Resmin biraz sağına */
+            background-color: #ef4444; /* Kırmızı renk */
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease-in-out;
+            z-index: 1001; /* Resimden de üstte olmalı */
+        }
+        .image-modal-close:hover {
+            background-color: #dc2626;
+            transform: scale(1.1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center">
+    <header class="w-full header-bg py-16 shadow-xl rounded-b-[4rem] mb-16 relative">
+        <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 text-center text-white relative z-10">
+            <h1 class="text-6xl font-black mb-4 animate-fade-in-down tracking-tight drop-shadow-xl">
+                Yc <span class="text-blue-300">Store</span>
+            </h1>
+            <p class="mt-6 text-xl font-light opacity-90 animate-fade-in-up leading-relaxed max-w-2xl mx-auto">
+                Sende <span class="text-blue-300">Yc Store</span> farkını hisset
+            </p>
+            <div class="mt-12 relative max-w-lg mx-auto">
+                <input type="text" id="search-input" placeholder="Uygulama/açıklama ara..."
+                       class="w-full py-3.5 pl-12 pr-6 rounded-full bg-white bg-opacity-15 text-white search-input-placeholder focus:outline-none focus:ring-3 focus:ring-blue-400 focus:ring-opacity-60 focus:bg-opacity-25 transition-all duration-300 text-base sm:text-lg shadow-inner border border-transparent hover:border-blue-400 hover:border-opacity-50">
+                <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-white opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-10 max-w-7xl flex-grow">
+        <div id="app-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            </div>
+        <div id="no-results" class="hidden text-center text-gray-700 text-xl mt-20 p-10 bg-white rounded-xl shadow-lg border border-gray-200">
+            <p class="font-bold mb-4">Üzgünüz, aradığınız kritere uygun uygulama bulunamadı.</p>
+            <p class="text-lg leading-relaxed">Lütfen farklı bir arama terimi deneyin veya aşağıdaki buton ile tüm uygulamalara göz atın.</p>
+            <button onclick="clearSearch()" class="mt-8 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-semibold py-3 px-7 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md text-base tracking-wide">
+                Tüm Uygulamaları Göster
+            </button>
+        </div>
+    </main>
+
+    <div id="app-detail-modal" class="fixed inset-0 hidden items-center justify-center detail-modal-overlay p-4">
+        <div class="relative w-full max-w-4xl detail-modal-content">
+            <button id="close-modal" class="focus:outline-none">&times;</button>
+
+            <h2 id="detail-app-name" class="text-4xl font-extrabold text-gray-900 mb-6 text-center leading-tight"></h2>
+            <p id="detail-full-description" class="text-gray-700 mb-10 leading-relaxed text-base px-2 text-center max-w-3xl mx-auto"></p>
+
+            <div id="detail-app-images" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                </div>
+
+            <a id="detail-download-button" href="#" target="_blank" class="detail-download-button block text-center bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-800 hover:to-indigo-800 text-white shadow-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl">
+                Uygulamayı İndir
+            </a>
+        </div>
+    </div>
+
+    <div id="image-modal" class="fixed inset-0 hidden items-center justify-center image-modal-overlay p-4">
+        <div class="image-modal-content">
+            <img id="enlarged-image" src="" alt="Büyütülmüş Ekran Görüntüsü">
+            <button id="close-image-modal" class="image-modal-close">&times;</button>
+        </div>
+    </div>
+
+    <footer class="w-full bg-gray-900 text-gray-400 py-10 mt-20 rounded-t-3xl shadow-inner">
+        <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 text-center">
+            <p class="text-md mb-2">&copy; 2025 Yc Store. Tüm Hakları Saklıdır.</p>
+            <p class="text-sm">Geliştirici: Yc Store</p>
+            <div class="flex justify-center space-x-6 mt-6 text-sm">
+                <a href="#" class="footer-link hover:text-blue-300">Gizlilik Politikası</a>
+                <a href="#" class="footer-link hover:text-blue-300">Kullanım Şartları</a>
+                <a href="#" class="footer-link hover:text-blue-300">İletişim</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Uygulama verilerini içeren JavaScript dizisi
+        // Buraya uygulamalarınızın bilgilerini ekleyebilirsiniz.
+        // Her uygulama için bir obje oluşturun ve bilgileri girin.
+        const applications = [
+            {
+                id: 'app1',
+                name: 'YcTube',
+                logo: 'https://github.com/Yc-Store/YcStore/blob/main/YcTube.png?raw=true', // Buraya uygulama logonuzun URL'sini yapıştırın
+                previewDescription: 'YcTube, YouTube videolarını ve çalma listelerini kolayca indirin.',
+                fullDescription: 'YcTube, favori YouTube videolarınızı ve çalma listelerinizi bilgisayarınıza indirmenizi sağlayan kullanıcı dostu ve kapsamlı bir uygulamadır. Farklı video ve ses formatları arasından seçim yapabilir ve hatta meta verilerini düzenleyebilirsiniz. Playlist indirme özelliği sayesinde, tüm çalma listelerini tek seferde indirerek zaman kazanın. Dönüştürme ve kapak resmi gömme gibi gelişmiş özelliklerden faydalanın. YcTube, sorunsuz bir indirme deneyimi için tasarlanmıştır.',
+                downloadLink: 'https://drive.google.com/file/d/1LlljKaxaFZjEqqnDTj94SKNq7f-hqfxa/view?usp=drive_link', // Buraya uygulamanın indirme linkini yapıştırın
+                images: [
+                    'https://github.com/Yc-Store/YcStore/blob/main/f1.PNG?raw=true', // Buraya uygulamanın ilk ekran görüntüsü URL'sini yapıştırın
+                    'https://github.com/Yc-Store/YcStore/blob/main/f2.PNG?raw=true', // Buraya uygulamanın ikinci ekran görüntüsü URL'sini yapıştırın
+                    'https://github.com/Yc-Store/YcStore/blob/main/f3.PNG?raw=true'  // Buraya uygulamanın üçüncü ekran görüntüsü URL'sini yapıştırın
+                ]
+            },
+            {
+                id: 'app2',
+                name: 'Yc AI',
+                logo: 'https://github.com/Yc-Store/YcStore/blob/main/YcAI.png?raw=true', // Buraya uygulama logonuzun URL'sini yapıştırın
+                previewDescription: 'Yc AI, kişiselleştirilebilen ve sesli etkileşim sunan akıllı bir yapay zeka uygulamasıdır.',
+                fullDescription: 'Yc AI, hayatınızı kolaylaştıran kişisel bir yapay zeka asistanıdır. Groq API ile desteklenen bu uygulama, hızlı ve doğru yanıtlar sunar. Temel özellikler arasında koyu/açık tema seçimi ve mesaj renklerini değiştirme gibi kişiselleştirme seçenekleri bulunur. Ayrıca, yanıtları sesli olarak dinleyebilir veya mikrofon butonu aracılığıyla sesli komutlarla mesaj yazabilirsiniz. Yc AI ile daha etkili ve kişisel bir yapay zeka deneyimi yaşayın.',
+                downloadLink: 'https://drive.google.com/file/d/1Yb_tdJZT49m3Xblk27oCtbTtRBwslDQv/view?usp=drive_link', // Buraya uygulamanın indirme linkini yapıştırın
+                images: [
+                    'https://github.com/Yc-Store/YcStore/blob/main/a1.PNG?raw=true', // Buraya uygulamanın ilk ekran görüntüsü URL'sini yapıştırın
+                    'https://github.com/Yc-Store/YcStore/blob/main/a2.PNG?raw=true', // Buraya uygulamanın ikinci ekran görüntüsü URL'sini yapıştırın
+                    'https://github.com/Yc-Store/YcStore/blob/main/a3.PNG?raw=true'  // Buraya uygulamanın üçüncü ekran görüntüsü URL'sini yapıştırın
+                ]
+            },
+            {
+                id: 'app3',
+                name: 'Yc Lyrics',
+                logo: 'https://github.com/Yc-Store/YcStore/blob/main/YcLyrics.png?raw=true', // Buraya uygulama logonuzun URL'sini yapıştırın
+                previewDescription: 'Şarkı sözlerini bulmanızı ve kaydetmenizi sağlayan bir uygulama.',
+                fullDescription: 'Yc Lyrics ile artık şarkı sözü aramak çok kolay! Bu uygulama, favori şarkılarınızın sözlerini hızlıca bulmanızı ve metin veya .lrc formatında kaydetmenizi sağlar. İster müzik klasörünüzdeki şarkıların meta verilerinden otomatik olarak şarkı sözlerini çekin, ister manuel olarak arama yapın. Ham şarkı sözlerini temel .lrc formatına dönüştürebilirsiniz. Müzik deneyiminizi zenginleştirin ve şarkılarınıza eşlik edin.',
+                downloadLink: 'https://drive.google.com/file/d/164FCBzD6GIuzVc-FKvlLUfwSoLuW0FpZ/view?usp=drive_link', // Buraya uygulamanın indirme linkini yapıştırın
+                images: [
+                    'https://github.com/Yc-Store/YcStore/blob/main/c1.PNG?raw=true', // Buraya uygulamanın ilk ekran görüntüsü URL'sini yapıştırın
+                    'https://github.com/Yc-Store/YcStore/blob/main/c2.PNG?raw=true', // Buraya uygulamanın ikinci ekran görüntüsü URL'sini yapıştırın
+                    'https://github.com/Yc-Store/YcStore/blob/main/c3.PNG?raw=true'  // Buraya uygulamanın üçüncü ekran görüntüsü URL'sini yapıştırın
+                ]
+            },
+            {
+                id: 'app4',
+                name: 'Yc Beat',
+                logo: 'https://github.com/Yc-Store/YcStore/blob/main/YcBeat.png?raw=true', // Buraya uygulama logonuzun URL'sini yapıştırın
+                previewDescription: 'YcBeat, şarkı sözlerinize en uygun ritmi bulan müzik uygulamasıdır.',
+                fullDescription: 'YcBeat: Sözlerinize Doğru Ritmi Bulun! Şarkı sözleriniz var ama onlara en uygun ritmi mi arıyorsunuz? YcBeat, müzik tutkunları, söz yazarları ve yapımcılar için tasarlanmış yenilikçi bir uygulamadır. Yazdığınız şarkı sözlerine mükemmel uyum sağlayacak beatleri keşfetmek artık çok kolay! YcBeat, sadece yüklediğiniz ses dosyalarının BPM ve anahtar bilgilerini otomatik olarak tespit etmekle kalmaz, aynı zamanda yazdığınız sözlerin duygu ve ritmine uygun beatleri sizin için bulur. Hızlı, akıcı ve sezgisel deneyimiyle YcBeat, müziğinizin potansiyelini ortaya çıkarırken size güçlü bir araç sunar. YcBeat ile sözlerinize doğru ritmi bulun ve müziğinize yön verin!',
+                downloadLink: 'https://drive.google.com/file/d/1JQI49m6JUoVJpZyK9pHgAimKlB4dd9P1/view?usp=drive_link', // Buraya uygulamanın indirme linkini yapıştırın
+                images: [
+                    'https://github.com/Yc-Store/YcStore/blob/main/b1.PNG?raw=true', // Buraya uygulamanın ilk ekran görüntüsü URL'sini yapıştırın
+                    'https://github.com/Yc-Store/YcStore/blob/main/b2.PNG?raw=true', // Buraya uygulamanın ikinci ekran görüntüsü URL'sini yapıştırın
+                    'https://github.com/Yc-Store/YcStore/blob/main/b3.PNG?raw=true'  // Buraya uygulamanın üçüncü ekran görüntüsü URL'sini yapıştırın
+                ]
+            },
+            {
+                id: 'app5',
+                name: 'Yc Tıkla Aç',
+                logo: 'https://github.com/Yc-Store/YcStore/blob/main/Yc_T%C4%B1kla_Ac.png?raw=true', // Buraya uygulama logonuzun URL'sini yapıştırın
+                previewDescription: 'Yc Tıkla Aç, hazır butonları ve otomatik tarayıcı aramasıyla hızlı kullanım sağlar.',
+                fullDescription: 'Yc Tıkla Aç, belirli işlemleri hızlıca başlatmanızı sağlayan pratik bir araçtır. Uygulama içinde hazır bulunan butonları kullanarak veya dahili Google arama bölümünü kullanarak arattığınız kelimenin otomatik olarak varsayılan tarayıcınızda açılmasını sağlayabilirsiniz. Yc Tıkla Aç ile zaman kaybetmeyin, ihtiyacınız olan her şeye anında ulaşın!',
+                downloadLink: 'https://drive.google.com/file/d/1DXbHcAEgDUC9qts1MejAmtBup5MgQPxm/view?usp=drive_link', // Buraya uygulamanın indirme linkini yapıştırın
+                images: [
+                    'https://github.com/Yc-Store/YcStore/blob/main/e1.PNG?raw=true', // Buraya uygulamanın ilk ekran görüntüsü URL'sini yapıştırın
+                    'https://github.com/Yc-Store/YcStore/blob/main/e2.PNG?raw=true', // Buraya uygulamanın ikinci ekran görüntüsü URL'sini yapıştırın
+                      // Buraya uygulamanın üçüncü ekran görüntüsü URL'sini yapıştırın
+                ]
+            },
+            {
+                id: 'app6',
+                name: 'Yc Playlist',
+                logo: 'https://github.com/Yc-Store/YcStore/blob/main/YcPlaylist.png?raw=true', // Buraya uygulama logonuzun URL'sini yapıştırın
+                previewDescription: 'Yc Playlist, YouTube çalma listelerini MP3 olarak indiren araçtır.',
+                fullDescription: 'Yc Playlist, YouTube\'daki favori çalma listelerinizi toplu halde MP3 formatına dönüştürüp bilgisayarınıza indirmenizi sağlayan pratik bir uygulamadır. Kullanıcı dostu arayüzü sayesinde sadece çalma listesi URL\'sini yapıştırarak indirme işlemini başlatabilirsiniz. İlerleme çubuğu ile indirme durumunu anlık olarak takip edin. Çoklu indirme desteği ile aynı anda birden fazla şarkıyı işleyebilir, zaman kazanabilirsiniz. Müzik arşivinizi zenginleştirmek için idealdir.',
+                downloadLink: 'https://drive.google.com/file/d/1Ry_-Hvf1Tis5qoMjcDV-NjbX9iFZNqc9/view?usp=drive_link', // Buraya uygulamanın indirme linkini yapıştırın
+                images: [
+                    'https://github.com/Yc-Store/YcStore/blob/main/d1.PNG?raw=true' // Sadece bir tane bırakıldı.
+                ]
+            },
+            {
+                id: 'app7',
+                name: 'ffmpeg',
+                logo: 'https://github.com/Yc-Store/YcStore/blob/main/ffmpeg.png?raw=true', // Buraya uygulama logonuzun URL'sini yapıştırın
+                previewDescription: 'FFmpeg, Yc Store uygulamaları için gerekli güçlü bir multimedya çerçevesidir.',
+                fullDescription: 'FFmpeg, Yc Store\'daki bazı uygulamaların sorunsuz çalışması için gerekli olan güçlü bir multimedya çerçevesidir. Uygulamalarınızın tam performansla çalışması için, FFmpeg\'in sıkıştırılmış dosyasını doğrudan C:\\ sürücüsüne (yani C:\\ffmpeg klasörüne) ayıklamanız önemlidir. Bu dizin yolu doğru şekilde ayarlanmazsa, bazı Yc Store uygulamaları beklenen şekilde çalışmayabilir veya hiç başlamayabilir. En iyi deneyim için kurulum talimatlarına uyun.',
+                downloadLink: 'https://drive.google.com/file/d/19OI3AE656gv2aSwsr0Pq_hWBQl60WgUJ/view?usp=drive_link', // Buraya uygulamanın indirme linkini yapıştırın
+                images: [
+                     // Buraya uygulamanın ilk ekran görüntüsü URL'sini yapıştırın
+                     // Buraya uygulamanın ikinci ekran görüntüsü URL'sini yapıştırın
+                     // Buraya uygulamanın üçüncü ekran görüntüsü URL'sini yapıştırın
+                ]
+            }
+        ];
+
+        // Gerekli DOM elemanlarını seçme
+        const appListDiv = document.getElementById('app-list');
+        const appDetailModal = document.getElementById('app-detail-modal');
+        const closeModalButton = document.getElementById('close-modal');
+        const detailAppName = document.getElementById('detail-app-name');
+        const detailFullDescription = document.getElementById('detail-full-description');
+        const detailAppImages = document.getElementById('detail-app-images');
+        const detailDownloadButton = document.getElementById('detail-download-button');
+        const searchInput = document.getElementById('search-input');
+        const noResultsDiv = document.getElementById('no-results');
+
+        // Resim büyütme modalı elemanları
+        const imageModal = document.getElementById('image-modal');
+        const enlargedImage = document.getElementById('enlarged-image');
+        const closeImageModalButton = document.getElementById('close-image-modal');
+
+        /**
+         * Uygulama kartlarını ana sayfaya render eder.
+         * @param {Array} appsToRender - Render edilecek uygulama dizisi.
+         */
+        function renderAppCards(appsToRender) {
+            appListDiv.innerHTML = ''; // Mevcut kartları temizle
+            if (appsToRender.length === 0) {
+                noResultsDiv.classList.remove('hidden'); // Sonuç yok mesajını göster
+            } else {
+                noResultsDiv.classList.add('hidden'); // Sonuç yok mesajını gizle
+                appsToRender.forEach(app => {
+                    const appCard = document.createElement('div');
+                    // Tailwind CSS sınıfları ile kart stilini belirleme
+                    appCard.classList.add(
+                        'app-card', 'cursor-pointer', 'group' /* Grup hover için */
+                    );
+                    appCard.dataset.appId = app.id; // Uygulama ID'sini veri özelliği olarak ekle
+
+                    appCard.innerHTML = `
+                        <img src="${app.logo}" alt="${app.name} Logo" class="rounded-[1.25rem] shadow-lg">
+                        <h3>${app.name}</h3>
+                        <p>${app.previewDescription}</p>
+                    `;
+                    appListDiv.appendChild(appCard);
+                });
+            }
+        }
+
+        /**
+         * Belirtilen uygulama ID'sine göre detay modalını gösterir.
+         * @param {string} appId - Detayı gösterilecek uygulamanın ID'si.
+         */
+        function showAppDetail(appId) {
+            const app = applications.find(a => a.id === appId); // Uygulamayı bul
+            if (app) {
+                // Detay modalının içeriğini doldurma
+                detailAppName.textContent = app.name;
+                detailFullDescription.textContent = app.fullDescription;
+                detailDownloadButton.href = app.downloadLink;
+
+                detailAppImages.innerHTML = ''; // Mevcut resimleri temizle
+                app.images.forEach(imageUrl => {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = `${app.name} Ekran Görüntüsü`;
+                    // Resim için Tailwind CSS sınıfları
+                    img.classList.add('w-full', 'h-56', 'object-cover', 'rounded-xl', 'shadow-lg', 'transform', 'hover:scale-103', 'transition-transform', 'duration-200'); // h-56 -> 14rem
+                    // Resim yüklenemezse yedek placeholder resim göster
+                    img.onerror = function() {
+                        this.src = `https://placehold.co/800x450/BDC3C7/4B5563?text=Resim+Yuklenemedi`;
+                    };
+                    // Resme tıklama olayını ekle
+                    img.addEventListener('click', () => {
+                        showEnlargedImage(imageUrl);
+                    });
+                    detailAppImages.appendChild(img);
+                });
+
+                // Modalı görünür yap
+                appDetailModal.classList.remove('hidden');
+                appDetailModal.classList.add('flex'); // Modalı ortalamak için flex kullan
+                document.body.style.overflow = 'hidden'; // Ana sayfayı kaydırmayı engelle
+            }
+        }
+
+        /**
+         * Detay modalını kapatır.
+         */
+        function closeAppDetail() {
+            appDetailModal.classList.add('hidden');
+            appDetailModal.classList.remove('flex');
+            document.body.style.overflow = 'auto'; // Ana sayfayı kaydırmayı tekrar etkinleştir
+        }
+
+        /**
+         * Resim büyütme modalını gösterir ve resmi yükler.
+         * @param {string} imageUrl - Büyütülecek resmin URL'si.
+         */
+        function showEnlargedImage(imageUrl) {
+            enlargedImage.src = imageUrl;
+            imageModal.classList.remove('hidden');
+            imageModal.classList.add('flex');
+            document.body.style.overflow = 'hidden'; // Ana sayfayı kaydırmayı engelle
+        }
+
+        /**
+         * Resim büyütme modalını kapatır.
+         */
+        function closeEnlargedImage() {
+            imageModal.classList.add('hidden');
+            imageModal.classList.remove('flex');
+            document.body.style.overflow = 'auto'; // Ana sayfayı kaydırmayı tekrar etkinleştir
+            enlargedImage.src = ''; // Resim kaynağını temizle
+        }
+
+        /**
+         * Arama çubuğuna girilen metne göre uygulamaları filtreler.
+         */
+        function filterApps() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const filteredApps = applications.filter(app =>
+                app.name.toLowerCase().includes(searchTerm) ||
+                app.previewDescription.toLowerCase().includes(searchTerm) ||
+                app.fullDescription.toLowerCase().includes(searchTerm)
+            );
+            renderAppCards(filteredApps);
+        }
+
+        /**
+         * Arama çubuğunu temizler ve tüm uygulamaları gösterir.
+         */
+        function clearSearch() {
+            searchInput.value = ''; // Arama kutusunu temizle
+            renderAppCards(applications); // Tüm uygulamaları yeniden render et
+        }
+
+        // Arama çubuğunun placeholder metnini ekran boyutuna göre ayarlar
+        function setSearchPlaceholder() {
+            const searchInput = document.getElementById('search-input');
+            // Tailwind'in 'sm' breakpoint'i genellikle 640px'tir.
+            // Bu değeri Tailwind yapılandırmanıza göre değiştirebilirsiniz.
+            if (window.innerWidth >= 640) {
+                searchInput.placeholder = "Uygulama adı veya açıklama ile ara...";
+            } else {
+                searchInput.placeholder = "Uygulama/açıklama ara...";
+            }
+        }
+
+        // Olay Dinleyicileri
+        // Uygulama kartlarına tıklama olayını dinle
+        appListDiv.addEventListener('click', (event) => {
+            const card = event.target.closest('.app-card'); // Tıklanan kartı bul
+            if (card) {
+                showAppDetail(card.dataset.appId); // Kartın ID'si ile detay göster
+            }
+        });
+
+        // Modalı kapatma butonuna tıklama olayını dinle
+        closeModalButton.addEventListener('click', closeAppDetail);
+
+        // Modalın dışına tıklanıldığında modalı kapat
+        appDetailModal.addEventListener('click', (event) => {
+            // Eğer tıklanan eleman modalın kendisi (yani overlay) ise kapat
+            if (event.target === appDetailModal) {
+                closeAppDetail();
+            }
+        });
+
+        // Resim büyütme modalını kapatma butonu
+        closeImageModalButton.addEventListener('click', closeEnlargedImage);
+
+        // Resim büyütme modalının dışına tıklanıldığında kapat
+        imageModal.addEventListener('click', (event) => {
+            if (event.target === imageModal) {
+                closeEnlargedImage();
+            }
+        });
+
+        // Arama çubuğunda her tuş vuruşunda filtreleme yap
+        searchInput.addEventListener('keyup', filterApps);
+
+        // Sayfa yüklendiğinde ve pencere boyutu değiştiğinde placeholder'ı ayarla
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAppCards(applications);
+            setSearchPlaceholder(); // İlk yüklemede placeholder'ı ayarla
+        });
+        window.addEventListener('resize', setSearchPlaceholder); // Pencere boyutu değiştiğinde placeholder'ı ayarla
+    </script>
+</body>
+</html>
